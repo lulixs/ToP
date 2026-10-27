@@ -113,18 +113,21 @@ class Tag extends StatelessWidget {
     return Container(
       height: 21,
       padding: EdgeInsets.symmetric(horizontal: 8),
-      alignment: Alignment.center,
       decoration: BoxDecoration(
         color: dark ? C.ink : (light ? C.white : C.zebra),
         border: Border.all(color: dark ? C.ink : g(0xFF8F8F8F)),
         borderRadius: BorderRadius.circular(6),
       ),
-      child: Text(text,
-          style: TextStyle(
-              fontSize: 11,
-              fontStyle: FontStyle.normal,
-              fontWeight: light ? FontWeight.w400 : FontWeight.w700,
-              color: dark ? C.white : (light ? C.ink2 : C.ink))),
+      // widthFactor keeps the tag as wide as its text instead of filling the row.
+      child: Center(
+        widthFactor: 1,
+        child: Text(text,
+            style: TextStyle(
+                fontSize: 11,
+                fontStyle: FontStyle.normal,
+                fontWeight: light ? FontWeight.w400 : FontWeight.w700,
+                color: dark ? C.white : (light ? C.ink2 : C.ink))),
+      ),
     );
   }
 }
@@ -166,6 +169,31 @@ class NoteBox extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(text, style: TextStyle(fontSize: 13, height: 1.45)),
+    );
+  }
+}
+
+/// Sign-in error (wrong password or PIN).
+class ErrorBox extends StatelessWidget {
+  final String text;
+  const ErrorBox(this.text, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.only(bottom: 14),
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      decoration: BoxDecoration(
+        color: C.card,
+        border: Border.all(color: C.ink, width: 2),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(children: [
+        Icon(Icons.error_outline, size: 20, color: C.ink),
+        SizedBox(width: 10),
+        Expanded(child: Text(text, style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700))),
+      ]),
     );
   }
 }

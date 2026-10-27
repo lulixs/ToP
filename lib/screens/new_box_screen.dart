@@ -52,9 +52,9 @@ class _NewBoxScreenState extends State<NewBoxScreen> {
         ),
       ]),
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        FieldLabel('Creation date *'),
+        FieldLabel('In storage since *'),
         TextField(controller: date),
-        Hint('Defaults to today. Can be set earlier. Cannot be changed after saving.'),
+        Hint('Defaults to today. Set an earlier date for a box that was already in storage.'),
       ]),
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         FieldLabel('Building *'),
@@ -63,7 +63,7 @@ class _NewBoxScreenState extends State<NewBoxScreen> {
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         FieldLabel('Shelf letter *'),
         TextField(controller: shelf),
-        Hint('One or two uppercase letters, such as A or AB'),
+        Hint('One to three uppercase letters, such as A, AB, or ABC'),
       ]),
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         FieldLabel('Shelf level *'),
@@ -112,9 +112,10 @@ class _NewBoxScreenState extends State<NewBoxScreen> {
           ),
           FooterBar(children: [
             PillButton('Cancel', height: 52, onTap: () => Navigator.pop(context)),
-            Expanded(child: PillButton('Save box', height: 52, wide: true, onTap: _save)),
+            Expanded(flex: 10, child: PillButton('Save box', height: 52, wide: true, onTap: _save)),
             Expanded(
-                child: PillButton('Save and print',
+                flex: 13,
+                child: PillButton('Save and print label',
                     style: BtnStyle.primary,
                     icon: Icons.print_outlined,
                     height: 52,

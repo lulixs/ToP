@@ -6,7 +6,8 @@ import '../theme.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/common.dart';
 
-/// 02a: pick a name, enter any 6-digit PIN. The 6th digit signs in.
+/// 02a/b: pick a name, enter a 6-digit PIN. The 6th digit signs in.
+/// Any PIN works except 000000, which shows the wrong-PIN error (02b).
 class EmployeeSignInScreen extends StatefulWidget {
   const EmployeeSignInScreen({super.key});
 
@@ -18,6 +19,7 @@ class _EmployeeSignInScreenState extends State<EmployeeSignInScreen> {
   late String name = employees.firstWhere((e) => e.active && e.name == AppState.currentUser,
       orElse: () => employees.firstWhere((e) => e.active)).name;
   String pin = '';
+  bool error = false;
 
   void _press(String k) {
     setState(() {
@@ -27,7 +29,12 @@ class _EmployeeSignInScreenState extends State<EmployeeSignInScreen> {
         pin += k;
       }
     });
-    if (pin.length == 6) {
+    if (pin.length == 6 && pin == '000000') {
+      setState(() {
+        error = true;
+        pin = '';
+      });
+    } else if (pin.length == 6) {
       AppState.currentUser = name;
       AppState.masterOn.value = false;
       Navigator.pushAndRemoveUntil(
@@ -60,8 +67,15 @@ class _EmployeeSignInScreenState extends State<EmployeeSignInScreen> {
                 decoration: BoxDecoration(
                     color: C.card, border: Border.all(color: C.line), borderRadius: BorderRadius.circular(16)),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                  if (error) ErrorBox('Incorrect PIN for $name. Try again.'),
                   FieldLabel('Name'),
-                  SelectBox(value: name, items: active, onChanged: (v) => setState(() => name = v)),
+                  SelectBox(
+                      value: name,
+                      items: active,
+                      onChanged: (v) => setState(() {
+                            name = v;
+                            error = false;
+                          })),
                   Hint('Active accounts only'),
                   SizedBox(height: 12),
                   FieldLabel('PIN'),

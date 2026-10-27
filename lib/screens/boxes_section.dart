@@ -33,7 +33,7 @@ class _BoxesSectionState extends State<BoxesSection> {
       if (q.isNotEmpty && !b.category.toLowerCase().contains(q) && !'${b.id}'.contains(q)) return false;
       return true;
     }).toList()
-      ..sort((a, b) => sort == 'Oldest first' ? a.created.compareTo(b.created) : b.created.compareTo(a.created));
+      ..sort((a, b) => sort == 'Oldest first' ? a.rackedSince.compareTo(b.rackedSince) : b.rackedSince.compareTo(a.rackedSince));
 
     final racked = list.where((b) => b.racked).length;
     final label = category == allCats ? 'All categories' : category;

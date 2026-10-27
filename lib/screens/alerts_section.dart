@@ -14,9 +14,11 @@ class AlertsSection extends StatelessWidget {
     final al = alertBoxes;
     return SectionPage(
       title: 'Alerts',
-      sub: '${al.length} boxes stored longer than $alertDays days, oldest first',
+      sub: '${al.length} boxes stored longer than the $alertDays-day alert threshold, oldest first',
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        NoteBox('Thrift on Purpose sets the number of days. 180 is a placeholder. '
+        NoteBox('The alert threshold is the number of days a racked box can stay in storage, '
+            'counted from its racked-since date, before it raises an alert. It is $alertDays days, a placeholder '
+            'until Thrift on Purpose chooses the number. The Master account sets it on the Account Management page. '
             'Only racked boxes raise alerts, and the same alerts are sent as push notifications.'),
         for (final b in al) BoxRow(b),
       ]),

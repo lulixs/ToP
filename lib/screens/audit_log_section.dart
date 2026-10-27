@@ -14,7 +14,7 @@ class AuditLogSection extends StatefulWidget {
 }
 
 class _AuditLogSectionState extends State<AuditLogSection> {
-  int? open = 5; // the Box #6789 edit starts expanded, as in the wireframe
+  int? open = audit.indexWhere((a) => a.target == 'Box #6789'); // starts expanded, as in the wireframe
   String query = '';
   String filter = 'All actions';
 

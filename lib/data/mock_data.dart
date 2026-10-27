@@ -2,7 +2,7 @@
 // Replace this file with real backend calls later.
 
 final DateTime today = DateTime(2026, 10, 7);
-const int alertDays = 180; // placeholder threshold
+const int alertDays = 180; // alert threshold placeholder (D-098, D-131)
 
 class Box {
   final int id;
@@ -11,14 +11,14 @@ class Box {
   final String shelf;
   final int level;
   final String fullness; // Full, Half, Empty
-  final DateTime created;
+  final DateTime rackedSince; // storage time and alerts count from this date
   final bool racked;
   final bool deleted;
 
   const Box(this.id, this.category, this.building, this.shelf, this.level,
-      this.fullness, this.created, this.racked, this.deleted);
+      this.fullness, this.rackedSince, this.racked, this.deleted);
 
-  int get daysStored => today.difference(created).inDays;
+  int get daysStored => today.difference(rackedSince).inDays;
   bool get tooLong => racked && !deleted && daysStored > alertDays;
 }
 
@@ -39,12 +39,10 @@ const String pc = 'Processing Center';
 const String ms = 'Main Store';
 const String oa = 'Old Annex';
 const List<String> buildings = [pc, ms, oa, 'Back Garage'];
-const Map<String, String> buildingAdded = {
-  pc: '08/31/26', ms: '08/31/26', oa: '09/14/26', 'Back Garage': '10/06/26',
-};
 
 DateTime _d(String s) => DateTime.parse(s);
 
+// id, category, building, shelf, level, fullness, racked since, racked, deleted
 final List<Box> boxes = [
   Box(6789, 'Coats', pc, 'A', 2, 'Full', _d('2026-01-14'), true, false),
   Box(6712, 'Coats', pc, 'B', 1, 'Half', _d('2026-02-21'), true, false),
@@ -88,7 +86,7 @@ List<Box> get activeBoxes => boxes.where((b) => !b.deleted).toList();
 List<Box> get rackedBoxes => activeBoxes.where((b) => b.racked).toList();
 List<Box> get deletedBoxes => boxes.where((b) => b.deleted).toList();
 List<Box> get alertBoxes =>
-    boxes.where((b) => b.tooLong).toList()..sort((a, b) => a.created.compareTo(b.created));
+    boxes.where((b) => b.tooLong).toList()..sort((a, b) => a.rackedSince.compareTo(b.rackedSince));
 
 Box boxById(int id) => boxes.firstWhere((b) => b.id == id);
 
@@ -116,8 +114,6 @@ const Map<int, List<String>> deletedInfo = {
   6377: ['09/18/26', 'Mabel'],
 };
 
-const List<String> deletedCategories = ['Tools'];
-
 // created, created by, last edited, edited by
 const Map<int, List<String>> boxRecord = {
   6789: ['01/14/26', 'Mabel', '10/02/26', 'Dipper'],
@@ -132,30 +128,30 @@ class AuditEntry {
 }
 
 const List<AuditEntry> audit = [
-  AuditEntry('10/07/26', '2:41 PM', 'Dipper', 'Yes', 'Processing tablet', 'Restore', 'Box #6655'),
-  AuditEntry('10/07/26', '11:20 AM', 'Mabel', 'No', 'Front desk tablet', 'Unrack', 'Box #6744',
+  AuditEntry('10/07/26', '2:41 PM', 'Dipper', 'Yes', 'Processing tablet', 'Restored', 'Box #6655'),
+  AuditEntry('10/07/26', '11:20 AM', 'Mabel', 'No', 'Front desk tablet', 'Unracked', 'Box #6744',
       'Rack status: Racked → Unracked'),
-  AuditEntry('10/06/26', '3:05 PM', 'Stan', 'No', 'Stockroom tablet', 'Soft delete', 'Box #6655'),
-  AuditEntry('10/06/26', '9:10 AM', 'Dipper', 'Yes', 'Processing tablet', 'Building add', 'Building Back Garage'),
-  AuditEntry('10/04/26', '3:15 PM', 'Wendy', 'No', 'Stockroom tablet', 'Create', 'Box #6801'),
-  AuditEntry('10/02/26', '9:12 AM', 'Dipper', 'No', 'Processing tablet', 'Edit', 'Box #6789',
+  AuditEntry('10/06/26', '3:05 PM', 'Stan', 'No', 'Stockroom tablet', 'Deleted', 'Box #6655'),
+  AuditEntry('10/06/26', '9:10 AM', 'Dipper', 'Yes', 'Processing tablet', 'Added', 'Building Back Garage'),
+  AuditEntry('10/05/26', '4:02 PM', 'Dipper', 'Yes', 'Processing tablet', 'Edited', 'Master account'),
+  AuditEntry('10/04/26', '3:15 PM', 'Wendy', 'No', 'Stockroom tablet', 'Added', 'Box #6801'),
+  AuditEntry('10/02/26', '9:12 AM', 'Dipper', 'No', 'Processing tablet', 'Edited', 'Box #6789',
       'Fullness: Half → Full\nNotes: (empty) → "Mostly adult sizes. Check zippers before putting out."'),
-  AuditEntry('09/30/26', '1:08 PM', 'Mabel', 'No', 'Front desk tablet', 'Category soft delete', 'Category Tools'),
-  AuditEntry('09/27/26', '8:41 PM', 'Mabel', 'Yes', 'Front desk tablet', 'Deactivate account', 'Employee Soos'),
-  AuditEntry('09/26/26', '4:30 PM', 'Dipper', 'No', 'Processing tablet', 'Soft delete', 'Box #6602'),
+  AuditEntry('09/30/26', '1:08 PM', 'Mabel', 'Yes', 'Front desk tablet', 'Permanently deleted', 'Category Tools'),
+  AuditEntry('09/27/26', '8:41 PM', 'Mabel', 'Yes', 'Front desk tablet', 'Deactivated', 'Employee Soos'),
 ];
 
+/// A signed-in tablet. Tablets with no one signed in are not listed (D-119).
 class Device {
   final String name;
   final bool thisTablet;
-  final String? employee;
+  final String employee;
   final bool masterOn;
-  final String signedIn, lastActivity;
-  const Device(this.name, this.thisTablet, this.employee, this.masterOn, this.signedIn, this.lastActivity);
+  final String lastActivity;
+  const Device(this.name, this.thisTablet, this.employee, this.masterOn, this.lastActivity);
 }
 
 const List<Device> devices = [
-  Device('Processing tablet', true, 'Dipper', true, '10/07/26 8:02 AM', '10/07/26 2:44 PM'),
-  Device('Front desk tablet', false, 'Mabel', false, '10/07/26 8:15 AM', '10/07/26 2:41 PM'),
-  Device('Stockroom tablet', false, null, false, '10/07/26 9:30 AM', '10/07/26 11:02 AM'),
+  Device('Processing tablet', true, 'Dipper', true, '10/07/26 2:44 PM'),
+  Device('Front desk tablet', false, 'Mabel', false, '10/07/26 2:41 PM'),
 ];

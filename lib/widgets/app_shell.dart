@@ -113,7 +113,7 @@ class _AppShellState extends State<AppShell> {
       Section.dashboard => DashboardSection(onOpenCategory: openCategory),
       Section.boxes => BoxesSection(
           key: ValueKey(boxesKey), initialCategory: boxesCategory, autofocusSearch: focusSearch),
-      Section.categories => CategoriesSection(),
+      Section.categories => CategoriesSection(onMasterRequired: toggleMaster),
       Section.alerts => AlertsSection(),
       Section.accounts => AccountsSection(),
       Section.buildings => BuildingsSection(),
@@ -130,8 +130,12 @@ class _AppShellState extends State<AppShell> {
       active: section,
       onTap: tapNav,
       onMaster: toggleMaster,
-      onSwitchUser: () => Navigator.pushAndRemoveUntil(context,
-          MaterialPageRoute(builder: (_) => EmployeeSignInScreen()), (_) => false),
+      // Switch user signs the employee out and turns Master mode off.
+      onSwitchUser: () {
+        AppState.masterOn.value = false;
+        Navigator.pushAndRemoveUntil(
+            context, MaterialPageRoute(builder: (_) => EmployeeSignInScreen()), (_) => false);
+      },
     );
     final main = Column(children: [
       Expanded(child: _page()),

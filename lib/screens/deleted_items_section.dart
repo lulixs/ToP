@@ -5,7 +5,7 @@ import '../theme.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/common.dart';
 
-/// 13a/b: soft-deleted boxes and categories (Master only).
+/// 13a/b: soft-deleted boxes (Master only). Categories and buildings have no soft delete.
 class DeletedItemsSection extends StatefulWidget {
   const DeletedItemsSection({super.key});
 
@@ -14,8 +14,6 @@ class DeletedItemsSection extends StatefulWidget {
 }
 
 class _DeletedItemsSectionState extends State<DeletedItemsSection> {
-  bool showBoxes = true;
-
   Future<void> _permDelete(String label) async {
     final r = await showPopup(context,
         title: 'Permanently delete $label?',
@@ -31,47 +29,18 @@ class _DeletedItemsSectionState extends State<DeletedItemsSection> {
       title: 'Deleted Items',
       sub: 'Master only. Restore or permanently delete.',
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Container(
-            margin: EdgeInsets.only(bottom: 12),
-            decoration: ShapeDecoration(shape: StadiumBorder(side: BorderSide(color: C.ink, width: 1.5))),
-            clipBehavior: Clip.antiAlias,
-            child: Row(mainAxisSize: MainAxisSize.min, children: [
-              _tab('Boxes (${del.length})', showBoxes, () => setState(() => showBoxes = true)),
-              _tab('Categories (${deletedCategories.length})', !showBoxes, () => setState(() => showBoxes = false)),
-            ]),
+        NoteBox('Only soft-deleted boxes appear here. Categories and buildings are deleted permanently '
+            'from their own pages. Permanent delete is the second step and cannot be undone.'),
+        for (final b in del)
+          _row(
+            title: 'Box #${b.id}',
+            lines: ['${b.category} · ${b.building} · Shelf ${b.shelf}, Level ${b.level}'],
+            deleted: 'Deleted ${deletedInfo[b.id]![0]} by ${deletedInfo[b.id]![1]}',
+            label: 'Box #${b.id}',
           ),
-        ),
-        NoteBox('Only soft-deleted boxes and categories appear here. '
-            'Permanent delete is the second step and cannot be undone.'),
-        if (showBoxes)
-          for (final b in del)
-            _row(
-              title: 'Box #${b.id}',
-              lines: ['${b.category} · ${b.building} · Shelf ${b.shelf}, Level ${b.level}'],
-              deleted: 'Deleted ${deletedInfo[b.id]![0]} by ${deletedInfo[b.id]![1]}',
-              label: 'Box #${b.id}',
-            )
-        else
-          for (final c in deletedCategories)
-            _row(title: c, lines: ['0 active boxes'], deleted: 'Deleted 09/30/26 by Mabel', label: 'Category $c'),
       ]),
     );
   }
-
-  Widget _tab(String text, bool on, VoidCallback onTap) => InkWell(
-        onTap: onTap,
-        child: Container(
-          height: 38,
-          padding: EdgeInsets.symmetric(horizontal: 22),
-          alignment: Alignment.center,
-          color: on ? C.ink : null,
-          child: Text(text,
-              style: TextStyle(
-                  fontSize: 14, color: on ? C.white : C.ink2, fontWeight: on ? FontWeight.w700 : FontWeight.w400)),
-        ),
-      );
 
   Widget _row({required String title, required List<String> lines, required String deleted, required String label}) {
     return Padding(

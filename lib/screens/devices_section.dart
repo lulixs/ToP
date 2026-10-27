@@ -21,31 +21,28 @@ class DevicesSection extends StatelessWidget {
             child: CardBox(
               child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                 Row(children: [
-                  Flexible(child: Text(d.name, style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700))),
-                  if (d.thisTablet) ...[SizedBox(width: 8), Tag('This tablet', light: true)],
-                  Spacer(),
+                  Expanded(
+                    child: Row(children: [
+                      Flexible(child: Text(d.name, style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700))),
+                      if (d.thisTablet) ...[SizedBox(width: 8), Tag('This tablet', light: true)],
+                    ]),
+                  ),
                   d.masterOn ? Tag('Master on', dark: true) : Tag('Master off', light: true),
                 ]),
                 SizedBox(height: 12),
                 Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Expanded(
-                      flex: 11,
-                      child: _cell(
-                          'Active employee',
-                          Text(d.employee ?? 'No active employee',
-                              style: TextStyle(
-                                  fontSize: 13.5,
-                                  fontWeight: d.employee != null ? FontWeight.w700 : FontWeight.w400,
-                                  color: d.employee != null ? C.ink : C.ink3)))),
-                  Expanded(flex: 10, child: _cell('Signed in', Text(d.signedIn, style: TextStyle(fontSize: 13.5)))),
-                  Expanded(
-                      flex: 10, child: _cell('Last activity', Text(d.lastActivity, style: TextStyle(fontSize: 13.5)))),
+                      child: _cell('Active employee',
+                          Text(d.employee, style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700)))),
+                  Expanded(child: _cell('Last activity', Text(d.lastActivity, style: TextStyle(fontSize: 13.5)))),
                 ]),
               ]),
             ),
           ),
         SizedBox(height: 2),
-        Text('This page is view only. Switch user clears the active employee on a tablet.',
+        Text(
+            'This page is view only. Tablets with no one signed in are not listed. '
+            'Switch user signs the employee out and turns Master mode off.',
             style: TextStyle(fontSize: 12.5, fontStyle: FontStyle.italic, color: C.ink3)),
       ]),
     );

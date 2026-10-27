@@ -84,7 +84,7 @@ class BuildingsSection extends StatelessWidget {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(name, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
               SizedBox(height: 4),
-              Text('$n boxes${dn > 0 ? ' ($dn deleted)' : ''} · Added ${buildingAdded[name]}',
+              Text('$n boxes${dn > 0 ? ' ($dn deleted)' : ''}',
                   style: TextStyle(fontSize: 13, color: C.ink2)),
             ]),
           ),

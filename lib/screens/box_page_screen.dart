@@ -6,7 +6,7 @@ import '../data/mock_data.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 
-/// 06a-e: box page. Edits stay on screen only (no backend).
+/// 06a-f: box page. Edits stay on screen only (no backend).
 class BoxPageScreen extends StatefulWidget {
   final int boxId;
   const BoxPageScreen({super.key, required this.boxId});
@@ -22,12 +22,15 @@ class _BoxPageScreenState extends State<BoxPageScreen> {
   late String level = '${box.level}';
   late String fullness = box.fullness;
   late bool racked = box.racked;
+  late DateTime rackedSince = box.rackedSince;
   late final shelf = TextEditingController(text: box.shelf);
   late final notes = TextEditingController(
       text: box.id == 6789
           ? 'Mostly adult sizes. Check zippers before putting out.'
           : 'Kids sizes. Moved to the sales floor for the fall push.');
   bool dirty = false;
+
+  int get daysStored => today.difference(rackedSince).inDays;
 
   void _change(VoidCallback f) => setState(() {
         f();
@@ -104,23 +107,36 @@ class _BoxPageScreenState extends State<BoxPageScreen> {
                 Seg(options: ['1', '2', '3'], value: lvl, onChanged: (v) => set(() => lvl = v)),
               ])),
             ]),
-            Hint('The change is kept when you tap Save changes on the box page.'),
+            Hint('Next, you choose whether to reset the storage timer. '
+                'The change is kept when you tap Save changes on the box page.'),
           ]),
         ),
-        actions: ['Cancel', 'Re-rack']);
-    if (r == 'Re-rack') {
-      _change(() {
-        racked = true;
-        building = b;
-        level = lvl;
-        shelf.text = sh.text;
-      });
-    }
+        actions: ['Cancel', 'Next']);
+    if (r != 'Next' || !mounted) return;
+
+    // 06f: second popup asks whether to reset the storage timer (D-132).
+    final keep = 'Keep ${fmtDate(rackedSince)}';
+    final t = await showPopup(context,
+        title: 'Reset the storage timer?',
+        message: 'The storage timer for Box #${box.id} started on ${fmtDate(rackedSince)}, $daysStored days ago. '
+            'Reset it if the box is going back into storage as new. '
+            'Keep the date if the box was only out for a short time.',
+        body: Hint('Storage time and alerts count from this date. '
+            'The change is kept when you tap Save changes on the box page.'),
+        actions: [keep, 'Reset to today']);
+    if (t == null) return;
+    _change(() {
+      racked = true;
+      building = b;
+      level = lvl;
+      shelf.text = sh.text;
+      if (t == 'Reset to today') rackedSince = today;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final rec = boxRecord[box.id] ?? [fmtDate(box.created), 'Mabel', '10/02/26', 'Dipper'];
+    final rec = boxRecord[box.id] ?? [fmtDate(box.rackedSince), 'Mabel', '10/02/26', 'Dipper'];
     final wide = MediaQuery.sizeOf(context).width > 600;
     final cards = <Widget>[
       CardBox(
@@ -155,11 +171,11 @@ class _BoxPageScreenState extends State<BoxPageScreen> {
           SizedBox(height: 14),
           const _Label('Days stored'),
           Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            Text('${box.daysStored}', style: TextStyle(fontSize: 46, fontWeight: FontWeight.w700, height: 1)),
+            Text('$daysStored', style: TextStyle(fontSize: 46, fontWeight: FontWeight.w700, height: 1)),
             SizedBox(width: 10),
-            if (box.daysStored > alertDays && racked) Tag('Stored too long', dark: true),
+            if (daysStored > alertDays && racked) Tag('Stored too long', dark: true),
           ]),
-          Hint('Since ${fmtDate(box.created)}. The creation date cannot be changed.'),
+          Hint('In storage since ${fmtDate(rackedSince)}. Re-racking can reset it.'),
         ]),
       ),
       CardBox(

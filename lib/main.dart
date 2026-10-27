@@ -4,8 +4,9 @@ import 'screens/master_signin_screen.dart';
 import 'theme.dart';
 
 /// IMP tablet app - click-through front end.
-/// Flow: Tablet setup (any email/password) -> Employee sign-in (any 6-digit PIN)
-/// -> Dashboard. Everything runs on fake data in lib/data/mock_data.dart.
+/// Flow: First-time setup (Master account, tablet name, first employee)
+/// -> Dashboard. Switch user -> Employee sign-in (any 6-digit PIN).
+/// Everything runs on fake data in lib/data/mock_data.dart.
 void main() => runApp(const ImpApp());
 
 class ImpApp extends StatelessWidget {
@@ -19,7 +20,7 @@ class ImpApp extends StatelessWidget {
         title: 'IMP',
         debugShowCheckedModeBanner: false,
         theme: buildTheme(),
-        home: SetupScreen(),
+        home: FirstSetupScreen(),
       ),
     );
   }

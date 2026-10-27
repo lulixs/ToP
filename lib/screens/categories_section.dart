@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../app_state.dart';
 import '../data/mock_data.dart';
 import '../theme.dart';
 import '../widgets/app_shell.dart';
@@ -18,7 +19,7 @@ Future<void> showCategoryDialog(BuildContext context, {String? name}) async {
         builder: (ctx, set) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           FieldLabel('Name'),
           TextField(controller: ctrl, autofocus: true, decoration: InputDecoration(hintText: 'Spring Decor')),
-          Hint('Must be different from every active category'),
+          Hint('Must be different from every other category'),
           SizedBox(height: 14),
           FieldLabel('Symbol', suffix: '(optional)'),
           Row(children: [
@@ -53,9 +54,21 @@ Future<void> showCategoryDialog(BuildContext context, {String? name}) async {
 
 void _noop() {}
 
-/// 08a: category list. + adds, Edit opens the same popup filled in.
+/// 08a/c: category list. + adds, Edit opens the same popup filled in.
+/// Delete is Master only and permanent, and only for a category no box uses (D-123).
 class CategoriesSection extends StatelessWidget {
-  const CategoriesSection({super.key});
+  /// Opens the Master mode popup when the locked Delete button is tapped.
+  final VoidCallback onMasterRequired;
+  const CategoriesSection({super.key, required this.onMasterRequired});
+
+  Future<void> _delete(BuildContext context, String cat) async {
+    final r = await showPopup(context,
+        title: 'Delete $cat permanently?',
+        message: 'No boxes use this category. Deleting it is permanent and cannot be undone. '
+            'The delete is recorded in the audit log.',
+        actions: ['Cancel', 'Delete category']);
+    if (r == 'Delete category' && context.mounted) demoSnack(context, '$cat deleted (demo only)');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,16 +76,21 @@ class CategoriesSection extends StatelessWidget {
       title: 'Categories',
       sub: '${categories.length} categories',
       onAdd: () => showCategoryDialog(context),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        NoteBox('Any employee can add, edit, or soft-delete a category. '
-            'A deleted category is hidden until the Master account restores it.'),
-        for (final cat in categories) _row(context, cat),
-      ]),
+      child: ValueListenableBuilder<bool>(
+        valueListenable: AppState.masterOn,
+        builder: (context, masterOn, _) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          NoteBox('Any employee can add a category or edit its name and symbol. '
+              'Only the Master account can delete a category, with Master mode on. Deleting is permanent '
+              'and is blocked while any box, active or deleted, uses the category.'),
+          for (final cat in categories) _row(context, cat, masterOn),
+        ]),
+      ),
     );
   }
 
-  Widget _row(BuildContext context, String cat) {
+  Widget _row(BuildContext context, String cat, bool masterOn) {
     final n = activeBoxes.where((b) => b.category == cat).length;
+    final used = boxes.any((b) => b.category == cat);
     return Padding(
       padding: EdgeInsets.only(bottom: 7),
       child: CardBox(
@@ -82,16 +100,17 @@ class CategoriesSection extends StatelessWidget {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(withSymbol(cat), style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700)),
               SizedBox(height: 4),
-              Text('$n active boxes${n > 0 ? ' · cannot be deleted while boxes use it' : ''}',
+              Text('$n active boxes${masterOn && used ? ' · in use, cannot be deleted' : ''}',
                   style: TextStyle(fontSize: 13, color: C.ink2)),
             ]),
           ),
           PillButton('Edit', small: true, onTap: () => showCategoryDialog(context, name: cat)),
           SizedBox(width: 8),
-          PillButton('Delete',
-              small: true,
-              style: BtnStyle.soft,
-              onTap: n > 0 ? null : () => demoSnack(context, '$cat deleted (demo only)')),
+          masterOn
+              ? PillButton('Delete',
+                  small: true, style: BtnStyle.soft, onTap: used ? null : () => _delete(context, cat))
+              : PillButton('Delete',
+                  small: true, style: BtnStyle.disabled, icon: Icons.lock_outline, onTap: onMasterRequired),
         ]),
       ),
     );
