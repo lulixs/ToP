@@ -44,7 +44,7 @@ class _MasterAccountPageState extends State<MasterAccountPage> {
   Widget build(BuildContext context) {
     return SetupLayout(
       step: 1,
-      subtitle: 'First-time setup, step 1 of 3. Create the master account.',
+      subtitle: 'Create the master account.',
       child: Form(
         key: _formKey,
         child: Column(
@@ -52,7 +52,7 @@ class _MasterAccountPageState extends State<MasterAccountPage> {
           children: [
             const NoteBox(
               'Welcome to IMP! Please set up the store\'s master account below. '
-              'The password below will be used for account authetication and privilege elevation.',
+              'The password below will be used for account authentication and privilege elevation.',
             ),
             const FieldLabel('Email'),
             TextFormField(
