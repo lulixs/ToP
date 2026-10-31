@@ -35,4 +35,11 @@ void main() {
     final navigator = tester.state<NavigatorState>(find.byType(Navigator));
     expect(navigator.canPop(), isFalse);
   });
+
+  testWidgets('skipSetup opens the dashboard directly', (tester) async {
+    await tester.pumpWidget(const ImpApp(skipSetup: true));
+
+    expect(find.byType(DashboardPage), findsOneWidget);
+    expect(find.byType(FirstSetupFlow), findsNothing);
+  });
 }
