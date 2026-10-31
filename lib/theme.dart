@@ -10,6 +10,9 @@ class AppColors {
   static const field = Color(0xFF9D9D9D); // text field borders
   static const panel = Color(0xFFE6E6E6); // setup and sign-in background
   static const card = Color(0xFFFFFFFF); // cards
+  static const half = Color(0xFFA8A8A8); // "Half" part of the fullness bar
+  static const barEmpty = Color(0xFFF4F4F4); // "Empty" part of the fullness bar
+  static const barBorder = Color(0xFF9A9A9A); // fullness bar outline
 }
 
 ThemeData buildTheme() {
