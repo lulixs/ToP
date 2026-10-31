@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'screens/dashboard/dashboard_page.dart';
 import 'screens/setup/first_setup_flow.dart';
 import 'theme.dart';
 
@@ -14,12 +15,16 @@ class ImpApp extends StatelessWidget {
       title: 'IMP',
       debugShowCheckedModeBanner: false,
       theme: buildTheme(),
-      // Temporary: there is no backend call or dashboard yet, so finishing setup
-      // only prints to the terminal. Passwords and PINs are never printed.
-      home: FirstSetupFlow(
-        onFinished: (data) => debugPrint(
-          'Setup finished: Master ${data.masterEmail}, tablet "${data.tabletName}", '
-          'employee "${data.employeeName}"',
+      // Builder gives a context below MaterialApp, which Navigator needs.
+      home: Builder(
+        builder: (context) => FirstSetupFlow(
+          // Temporary: the setup data is not saved anywhere yet, since there is no
+          // backend call. Finishing setup just opens the dashboard and clears setup
+          // from the back stack, so the back button can't return to it.
+          onFinished: (data) => Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const DashboardPage()),
+            (_) => false,
+          ),
         ),
       ),
     );
